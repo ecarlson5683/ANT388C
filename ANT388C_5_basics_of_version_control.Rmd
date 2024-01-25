@@ -46,7 +46,7 @@ Select extent of permissions you would like to grant this token.
   To use your token to access repositories from the command line, select the “repo” checkbox.
   Also requires read:org and workflow
 Click the green “Generate token” button.
-  `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`
+  `<PAT code>`
 Once you have a token, you enter it instead of your password when performing git operations over HTTPS. Personal access tokens can only be used for HTTPS git operations
 
 
