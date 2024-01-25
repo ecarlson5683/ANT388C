@@ -302,3 +302,11 @@ The web book [*Happy Git and GitHub for the useR*](https://happygitwithr.com) by
 - Add Dr. Di Fiore to repo (username "difiore")
 - Clone repo to your computer
 - Create an RMarkdown or Quarto document
+
+## Authentication issues
+PAT token revoked, unable to enter a new one to log in to GitHub.
+Followed instructions in "using the git Credential Manager (GCM)".
+
+  - Required running commands in erc2866 terminal (rather than any subdirectories)
+  - Was able to log in to account this way and push/pull changes to ANT388C repository
+  - Unclear if this applies to other GitHub repositories
