@@ -1,0 +1,166 @@
+---
+title: "ANT 388C: Module 6, Reproducible Research"
+output: html_document
+date: "2024-01-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Reproducible research {#module-06}
+
+## Introduction to GitHub, R projects, R Markdown, and Quarto (2024-01-24)
+
+### Add a repository to github user interface
+
+github.com/ecarlson5683
+Profile > Your repositories > New
+Title: ANT388C
+Select Public (if you want other people to see it)
+Select "Add a README file"
+Add .gitignore > template for R
+  tell git not to watch changes to R data file as a default
+Create repository
+
+### To clone this repository down to local RStudio
+Code tab > https://github.com/ecarlson5683/ANT388C.git
+
+in RStudio > File > New Project > Create from Version > Git
+then paste in git link https://github.com/ecarlson5683/ANT388C.git
+Can choose where you want to create repository on local machine
+Create project
+
+Should prompt to sign into github account
+
+### How to add a collaborator
+in github > "<Repository of interest>" >Settings > Collaborators
+
+### Create a new RMarkdown document
+in RStudio > File > New File > RMarkdown >
+  document box: Title, etc.
+  opens a template for R Markdown file
+  
+### Create a new Quarto Document
+in RStudio > File > New File > RMarkdown >
+  document box: Title, etc.
+  opens a template for Quarto file
+  
+To put a flog, write a Commit message
+
+```{r}
+
+```
+
+# Module 6:
+
+> In the last module, we introduced the concept of version control and looked at tools for interfacing between between a repository maintained remotely on ***GitHub*** and a local repository, using the version control system, ***git***. Now, we are going to learn how we can use ***RStudio*** to manage the ***git/GitHub*** version control workflow. An additional objective of this module is to promote the ideas of reproducible research practice and literate programming by introducing you to **RMarkdown** and **Quarto**, which are both plain-text document formats that allow us to mix text and code in a flexible way and to generate a variety of nicely rendered outputs (e.g., websites, books, PDFs, presentations, and other media formats).
+
+## Background
+
+**Reproducible research** refers to the practice of conducting and disseminating scientific research in a way that makes data analysis (and scientific claims more generally) more transparent and repeatable. Academics already have means of sharing *methods* and *results* generally, through publications (although perhaps typically in less than complete detail), and we can share the data on which our analyses are based by depositing them in some form of online repository (e.g., via “supplementary information” that accompanies an article or by posting datasets to repositories like the [**Dryad Digital Repository**](http://datadryad.org/) or [**Figshare**](https://figshare.com/).
+
+But how do we share the details of exactly how we did an analysis? And how can we ensure that it is possible for us to go back, ourselves, and replicate a particular analysis or data transformation? One solution is to integrate detailed text describing a workflow and analytical source code (such as ***R*** scripts) together in the same document.
+
+This idea of tying together narrative, logic, specific code, and data (or references to them) in a single document stems from the principle of [**literate programming**](https://en.wikipedia.org/wiki/Literate_programming) developed by Donald Knuth. Applied to scientific practice, the concept of literate programming means documenting both the logic behind and analysis and the code used to implement that analysis using computer software. This documentation allows researchers to return to and re-examine their own thought processes at any later time, and also allows them to share their thought processes so that others can understand how an analysis was performed. The upshot is that our scholarship can be better understood, recreated, and independently verified.
+
+This is the purpose of **RMarkdown** and **Quarto** documents.
+
+[**Markdown**](https://en.wikipedia.org/wiki/Markdown) is simply a formal way of styling a plain text document so that it can be easily rendered into HTML or PDF files for sharing or publishing. It is based on using some simple formatting and special characters to tag pieces of text such that a parser knows how to convert a plain text document into HTML or PDF. [**This link**](https://daringfireball.net/projects/markdown/syntax) takes you to a classic description of **Markdown**, its syntax, and the philosophy behind it written by its creator, John Gruber. There are now several different “dialects” of **Markdown** that have been developed, derived from Gruber’s original suggestions, including a specific one used on ***GitHub*** called “GitHub Flavored Markdown”, or ***GFM***. A guide to this dialect is provided as a PDF [**here**](https://guides.github.com/pdfs/markdown-cheatsheet-online.pdf) and is available online at [**this link**](https://github.github.com/gfm/).
+
+**RMarkdown** and **Quarto** documents are very similar extensions of standard **Markdown** that allows you to embed chunks of ***R*** code (or code blocks of other programming languages, e.g., ***Python***, ***Latex***), along with additional parsing instructions and options for running code, in a plain text file. During the parsing and rendering (or “knitting”) stage, when the text file is being converted to HTML or PDF format, the output of running the embedded code can also be included.
+
+A cheatsheet on **RMarkdown** syntax can be found [**here**](https://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf). **Quarto** documents use a separate piece of independent software, **quarto** (along with {knitr}, in some cases), to do the same thing. An overview and useful definitive guide to all you can do with Quarto can be found [**here**](https://quarto.org/docs/guide/).
+
+> NOTE: See also Chapters 8 and 12 of the web book [**Happy Git and GitHub**](https://happygitwithr.com/) for the useR for more information on managing ***git*** and ***GitHub*** through ***RStudio***.
+
+## Organizing work with ***R*** Projects
+The easiest way to get ***RStudio*** to play nicely with ***git*** and ***GitHub*** for version control - and a recommended best practice - is to organize your work in ***RStudio*** using projects. You can think of an ***R*** project as a convenient workspace that is associated with its own working directory, data files, scripts, images, history log, etc. We might, for example, create a separate ***R*** project for each manuscript that we are working on.
+
+creating an ***RStudio*** project means creating a special text file (“.Rproj”) that stores settings for particular ***RStudio*** setup and session. When we open an “.Rproj” file, the working directory is automatically set to the root directory for the project (i.e., the directory in which the actual “.Rproj” file is stored), which makes organizing and navigating around the computer’s filesystem, either from the command line or in ***R*** scripts within the project, much easier.
+
+### Workflows for creating projects
+For the sake of security, reproducibility, and collaboration, it makes a lot of sense for us to have all of our data science/data analysis projects both be under version control (e.g., using ***git***) and hosted remotely on a secure and reliable platform (e.g., ***GitHub***) that we and collaborators can access from different locations. There are multiple ways we can accomplish this.
+
+For example, we could begin by setting up a new repository remotely, as we did in Module 05, and then “clone” it to our local computer and establish it as a version-controlled ***RStudio*** project. Alternatively, we could first create a new version-controlled ***RStudio*** project in a local directory and then push it up to ***GitHub*** or some other hosting site.
+
+#### **Method 1**: Create a new ***RStudio*** project by cloning from a remote repository {.unnumbered}
+
+The easiest way to get ***RStudio*** working nicely with ***git*** and ***GitHub*** is by creating a new repository on ***GitHub*** and then "cloning" this remote repository to a local computer and placing it under version control.
+
+> **NOTE:** Before completing the following, you should make sure to **delete** any existing local version of the remote repository that you might have cloned previously, e.g., by moving it to the `Trash` on MacOS or the `Recycle Bin` on Windows. This is because if you try to clone a remote repository into an existing directory, you will get an error!
+
+##### Step 1 {.unnumbered}
+
+- First, as described in [**Module 05**](#module-05), go to your user profile in ***GitHub*** and create a new repository.
+
+You will need to specify a repository name (with no spaces), whether it is a public or private repository, and whether to initialize the repository with one or more files already in it. I recommend initializing with both a "README" file and with a ".gitignore" file. You can also choose to use an ***R*** template to follow for the ".gitignore" file. The ".gitignore" file is simply a text document the provides ***git*** with a list of files that you ask it NOT to track changes to. These are typically either very large files (e.g., data files) or various hidden files that are either unnecessary or undesirable to track every single change to.
+
+- Once your repository is created, go to the green "Code" popdown menu and click the clipboard icon to copy the repository's HTTPS URL. This is the same process we used in [**Module 05**](#module-05) for cloning a remote repository, and the URL is likely to be `https://github.com/` followed by `<your user name>/<your repository name>`).
+
+##### Step 2 {.unnumbered}
+
+- From the **File** menu in ***RStudio***, choose **New Project** and select to "Checkout a project from a version control repository"...
+
+> **NOTE:** This step can also be done from the popdown menu located at the top right of the ***RStudio*** IDE.
+
+```{r}
+#| echo: false
+#| out_width: "60%"
+knitr::include_graphics("img/new-project-version-control.png")
+```
+
+- Choose the top item, "Clone a project from a Git repository"...
+
+```{r}
+#| echo: false
+#| out_width: "60%"
+knitr::include_graphics("img/new-project-from-git.png")
+```
+
+- In the subsequent dialog box, paste in the "Repository URL:" you copied in **Step 1**.
+
+You can choose what parent folder to clone the repository into using the "Create project as a subdirectory of:" field (e.g., `~/Development/Repos`). In most cases, the "Project directory name:" field will be filled in automatically, as the name of the remote repository you are cloning.
+
+```{r}
+#| echo: false
+#| out_width: "60%"
+knitr::include_graphics("img/clone-git-repo.png")
+```
+
+Hitting the "Create Project" button will download the repository from ***GitHub*** into a new directory on your local computer. ***RStudio*** will close and reopen, after which the working directory will be set to the new local repository directory, which you can confirm by typing `getwd()` at the ***R*** console prompt. The local directory is now set up to be tracked by ***git*** on your local computer and should be connected to ***GitHub***.
+
+Selecting the *Files* tab in ***RStudio*** will then show you all of the files in the newly created local repository, which should now contain a ".gitignore" file and an ".Rproj" file with the name of your project (e.g., "test-repo.Rproj"), in addition to the "README.md" file you created on ***GitHub***.
+
+You should now also see a "Git" tab in the upper right pane of the ***RStudio*** IDE, and that tab should list the ".Rproj" file associated with the status `?`, indicating that it has not yet been added, committed, or synced with the remote repository. The other two files (".gitignore" and "README.md") are already in sync.
+
+```{r}
+#| echo: false
+#| out_width: "90%"
+knitr::include_graphics("img/new-test-repo.png")
+```
+
+##### Other Notes {.unnumbered}
+
+This process works identically if you want to clone a repo from ***GitHub*** that already has other files in it besides ".gitignore" and "README.md". In that case, ***RStudio*** will simply just create the ".Rproj" file and modify any existing ".gitignore" file to also include one or more other files that it recommends that ***git*** not track, e.g., ".Rproj.user". The new ".Rproj" file and modified ".gitignore" file, which were created locally, should appear under the "Git" tab with with the status `?` until you add, commit, and push them.
+
+The process also works the same if you set up an empty repo on ***GitHub***, in which case you will have seen the window below immediately upon creating the repository:
+
+```{r}
+#| echo: false
+#| out_width: "90%"
+knitr::include_graphics("img/empty-repo.png")
+```
+
+Here, grabbing the URL from the "Quick setup" section and using that to set up a new project is ***RStudio*** is exactly the same process as we followed above.
+
+> **NOTE:** You could also, in a terminal window, navigate to where you want the remote project to be cloned and follow either the "... or create" or "... or push" instructions listed. Doing so will link a local directory to the remote repo you created on ***GitHub*** BUT you will then not have created that as an ***RStudio*** project and would need to follow up with other instructions below about creating a new project from an existing local directory.
+
+
+
+## Exercise 02 (due before class on Monday)
+
+Set up GitHub repo in GitHub workspace
+Add Dr. Di Fiore to repo (username "difiore")
+Clone repo to your computer
+Create an RMarkdown or Quarto document

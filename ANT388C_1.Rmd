@@ -1,0 +1,158 @@
+---
+title: "ANT 388C Lesson 1"
+output: html_document
+date: "2024-01-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Basic commands
+```{r}
+getwd() #lists the current working directory (the default folder where dialog boxes will open and where files and output will be stored unless otherwise specified)
+setwd("<path>") #supply the path to the desired directory
+ls() #view the names of all of the objects in your current workspace
+rm() #clear objects from your workspace by adding the object's name as the argument
+rm(list=ls()) #clear all objects in workspace
+```
+
+### Working with packages
+```{r}
+# whenever an object is referenced in a command, the R interpreter searches for that object in various loaded environments in a particular order and operates on the first one it encounters
+search() #return a vector of environment names in the order they will be searched
+install.packages() #install packages, sets of reusable R functions, into R
+library() #load installed packages
+detach(package:<package name>) #unload a package
+remove.packages() #to uninstall a package
+remove.packages(c("package_1","package_2")) #pass a vector of package names to uninstall multiple
+{easypackages} #introduces packages() and libraries(), which let you specify a vector of package names to either install (e.g., packages(c("tidyverse", "magrittr"))) or load (e.g., libraries(c("tidyverse", "magrittr")))
+
+package-name::function - syntax allowing functions from different packages with the same name to be called explicitly
+```
+
+### Fundamentals of R Language
+```{r}
+class() #indicates an object's class, a property of an object that determines how generic functions operate with it
+#Types of data structures
+  #Vectors are variables consisting of one or more values of the same type
+  c() #used to create vectors
+#coercion - when you attempt to combine different types of elements in the same vector, they are coerced to all be of the same type - the most restrictive that can accommodate all of the elements 
+  #logical → integer → double → character
+  #You can deliberately coerce a vector to be represented as a different base type with as.*()
+  as.logical(), as.integer(), as.double(), as.character()
+seq() #used to create more complicated sequences
+#attributes are metadata, data describing the object
+attr() #get or assign arbitrary attributes to an object
+attributes() #returns a list of attributes of x
+str() #returns the structure of an object
+```
+
+Modules 1-4
+```{r}
+
+```
+
+## Exercise 01: Send Emails Programatically
+
+```{r}
+pwd_gmail <- "fxwa gmai htcx nfdy"
+install.packages("emayili")
+install.packages("tidyverse")
+library(emayili)
+library(tidyverse)
+
+#send an email using {emayili}
+envelope(from = "erika.carlson@utexas.edu", 
+         to = "anthony.difiore@gmail.com", 
+         subject = "Sending a message using {emayili}", 
+         text = "Hello! This is a plain text message sent from a Gmail account.")
+
+#send an email using {emayili} with tidyverse syntax %>% or R native pipe operator |>
+message_gmail <- envelope() %>% 
+  from("erika.carlson@utexas.edu") %>% 
+  to("anthony.difiore@utexas.edu") %>% 
+  subject("Sending a message using {emayili}") %>% 
+  text("Hello! This is a plain text message sent from a Gmail account.")
+
+#create an SMTP (or “Simple Mail Transfer Protocol”) “server” object that includes details about how to send a message, i.e., by specifying the email service’s outgoing server host name, a communications port number to use, and user and password information for authenticating use of the server. To use Google’s outgoing email server, set the host to “smtp.gmail.com” and the port to either 465 or 587.
+smtp_gmail <- server(host = "smtp.gmail.com", 
+                     port = 465, 
+                     max_times = 1, 
+                     username = "erika.carlson@utexas.edu", 
+                     password = pwd_gmail)
+
+#send using Google server
+smtp_gmail(message_gmail, verbose = TRUE)
+
+?emayili() #for further customization
+
+
+#send an email using {mailR}
+#when I try it says it encountered a fatal error
+install.packages("mailR")
+library(mailR)
+send.mail(from = "erika.carlson@utexas.edu", 
+          to = "ecarlson5683@gmail.com", 
+          subject = "Sending a message using {mailR}", 
+          body = "Hello! This is a plain text message sent from a Gmail account.", 
+          smtp = list(host.name = "smtp.gmail.com", 
+                      port = 587, 
+                      user.name = "erika.carlson@utexas.edu",
+                      passwd = pwd_gmail, 
+                      ssl = TRUE), 
+          authenticate = TRUE, 
+          send = TRUE)
+
+```
+
+
+## Working with data
+
+```{r}
+#download data file from https://github.com/difiore/ada-2024-datasets
+#data set of phylogenetic data (no mammals)
+library(tidyverse)
+f <- file.choose() #navigate to data-wrangling.csv, f is now a file path
+d <- read_csv(f, col_names = TRUE) #indicates that 1st row has variable names 
+#tidyverse adds additional class information compared to what read.csv would give
+sciname <- paste(d$Genus, d$Species, sep = " ") #data.frame$column is a vector, building scientific name from two columns
+sciname <- paste0(d$Genus, " ", d$Species) #no indication of seperator, ability to mix and match
+sciname <- toupper(sciname) #capitalizes
+unique(d$Genus) #takes out all unique strings that appear in that column
+unique(d[["Genus"]]) #same result as above, different operator than $
+#could pass variable name inside brackets to automate pulling a set of columns
+var <- "Genus"
+unique(d[[var]])
+class(d)
+glimpse(d) #tidyverse version of general elements of dataset
+str(d) #general elements of data
+head(d) #first 6 rows of data frame
+tail(d) #last 6 rows of data frame
+head(d, 30) #can specify number of row to view
+gs <- d$MeanGroupSize
+class(gs)
+head(gs)
+tail(gs)
+glimpse(gs)
+gs + 1
+mean(gs, na.rm = TRUE)
+gs + c(1,2)
+c(1,2)
+```
+
+
+## Challenge
+
+```{r}
+#make a script to read in data, extract female mean body mass and brain size, and make a bivariate plot of the relationship between those varaibles on untransformed and log scale
+library(tidyverse)
+f <- "/Users/erc2866/Downloads/data-wrangling.csv"
+d <- read_csv(f, col_names = TRUE)
+bm <- d$Body_mass_female_mean
+bs <- d$Brain_Size_Species_Mean
+plot(bm, bs) #untransformed
+plot(log(bm), log(bs)) #transformed
+```
+

@@ -1,0 +1,176 @@
+---
+title: "ANT 388C Lesson 3: Reproducible Research"
+output: html_document
+date: "2024-01-24"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Module 5: Basics of version control
+
+## First steps with git and GitHub
+
+### Installing git
+Requires installing the package manager software Homebrew https://brew.sh/ in Terminal
+  Requires admin privileges for erc2866, gained via https://github.com/SAP/macOS-enterprise-privileges
+in Terminal
+  `brew install git`
+Check installation in Terminal
+  `which git`
+  output `/usr/local/bin/git`
+  `git --version`
+  output `git version 2.35.0` (mine is `git version 2.15.0`)
+Install Xcode Command Line Tools
+  `xcode-select --install`
+  
+  
+### Tell git who you are
+```{r}
+install.packages("usethis")
+library(usethis)
+use_git_config(user.name = "ecarlson5683", user.email = "ecarlson5683@gmail.com")
+detach(package:usethis)
+```
+
+
+### Generate a PAT on github.com
+In the upper-right corner of any page on GitHub, click your profile photo, then click “Settings”
+In the left sidebar, click “Developer settings”
+In the left sidebar, click “Personal access tokens”.
+Click “Generate new token”.
+Give your token a descriptive name in the “Note” field. (my-github-access)
+Set an expiration date for the token.
+Select extent of permissions you would like to grant this token. 
+  To use your token to access repositories from the command line, select the “repo” checkbox.
+  Also requires read:org and workflow
+Click the green “Generate token” button.
+  `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`
+Once you have a token, you enter it instead of your password when performing git operations over HTTPS. Personal access tokens can only be used for HTTPS git operations
+
+
+### Caching Your GitHub Credentials
+Requires the Homebrew package manager
+
+#### Using the GitHub CLI (Command Line Interface)
+The GitHub CLI will automatically store your git credentials for you when you choose HTTPS as your preferred protocol for git operations and answer “yes” to the prompt asking if you would like to authenticate to git with your GitHub credentials.
+
+Install the GitHub CLI by running `brew install gh` at a command prompt in a terminal window.
+In the command line, enter `gh auth login`, then follow the prompts.
+When prompted for your preferred protocol for ***git*** operations, select **HTTPS**
+When asked if you would like to authenticate to ***git*** with your ***GitHub*** credentials, enter “Y”
+
+
+### Creating a Remote Repository
+follow the instructions laid out in https://guides.github.com/activities/hello-world/ ***GitHub*** guide
+
+
+## Connecting ***git*** and ***GitHub***
+Making a clone of the remotely hosted repository on a local computer. We can then work on and commit changes locally via **git** and then, when we are ready, we can “push” those changes up to the remotely hosted repository on ***GitHub***.
+
+### Cloning a Remote Repository
+created a repository on github.com, then
+in the RStudio terminal (Tools > Terminal > New Terminal)
+  `cd /Users/erc2866/Development/Repos` (create new repos in a dedicated folder called `Repos/`)
+open a web browser, go to the landing page for your repository on **GitHub.com**, click the green button that says “Code”, then select the “HTTPS” tab and copy the web URL
+Return to the terminal window in RStudio or to the external shell prompt
+  `git clone https://github.com/ecarlson5683/ANT388C.git`
+If you then navigate into the newly created local directory using the `cd` command, you can list and look at the cloned files.  
+  `cd ANT388C` (to change into the correct directory)
+  `ls -a` (to list all the files in the directory)
+  `head README.md` (shows the first few lines of the file “README.md”)
+  `git remote show origin` (shows information about the remote repository, including the branch that “push” and “fetch” commands will be applied to and which branch is being tracked locally)
+
+
+### Making and pushing local changes
+edit one of the local files in your repo
+  `open README.md` (opening the “README.md” file in a text editor)
+Make a change to the file in the text editor or using `echo` >> <file>
+  `echo "Here is some new text I am adding from the shell to update the README file." >> README.md`
+  `git status` (see how file has changed)
+To propagate changes back up to the remote repository: 
+  [1] “stage” or “add” the files to a queue of local changes. 
+  [2] “commit” those changes to our local repository so that git acknowledges that changes have been made and approved. 
+  [3] “push” the committed changes up across the internet to the remote repository hosted on GitHub. 
+  These are done with the git commands `add`, `commit`, and `push` in the shell:
+  `add -A`
+  
+To propagate our changes back up to the remote repository, we now need to do three things: [1] First, we need to “stage” or “add” the files to a queue of local changes. [2] We then need to “commit” those changes to our local repository so that git acknowledges that changes have been made and approved. [3] Finally, we then need to “push” the committed changes up across the internet to the remote repository hosted on GitHub. These are done with the git commands add, commit, and push in the shell as follows:
+  `git add -A`
+  `git commit -m "A commit from my local repo"`
+  `git push`
+  
+NOTE: The `-A` argument following the git add command means to stage all files in the repo that have changed since the last commit (in this case, we have only one, “README.md”). The `-m` argument following `git commit` indicates the message we want to include with our commit. It is necessary to include SOME message with each commit, and it is good practice to include a short description of what the commit includes, e.g., “Updating README file”.
+  
+  
+### Pulling Changes from ***GitHub***
+Make an edit to the README.md online, and commit it
+Return to the shell prompt inside the local directory for your repository and enter the command 
+  `git pull`
+You should see something indicating that the main branch of the local repository has been “fast-forwarded” to the state of the remote main branch that is being tracked:
+If you run the command `git pull` and the local repo is in sync with the version hosted on GitHub, you should see something like the following:
+  Already up to date.
+
+
+## Additional useful information
+See Module 5.6 for "Using the Shell" and SSH file transfer protocol (instead of HTTPS) 
+with `RSA` key pairs
+
+
+###Reproducible research
+
+Introduction to GitHub, R projects, R Markdown, and Quarto
+
+
+Add a repository to github user interface
+
+github.com/ecarlson5683
+Profile > Your repositories > New
+Title: ANT388C
+Select Public (if you want other people to see it)
+Select "Add a README file"
+Add .gitignore > template for R
+  tell git not to watch changes to R data file as a default
+Create repository
+
+
+To clone this repository down to local RStudio
+Code tab > https://github.com/ecarlson5683/ANT388C.git
+
+in RStudio > File > New Project > Create from Version > Git
+then paste in git link https://github.com/ecarlson5683/ANT388C.git
+Can choose where you want to create repository on local machine
+Create project
+
+Should prompt to sign into github account
+
+How to add a collaborator
+in github > "<Repository of interest>" >Settings > Collaborators
+
+
+Create a new RMarkdown document
+in RStudio > File > New File > RMarkdown >
+  document box: Title, etc.
+  opens a template for R Markdown file
+  
+Create a new Quarto Document
+in RStudio > File > New File > RMarkdown >
+  document box: Title, etc.
+  opens a template for Quarto file
+  
+To put a flog, write a Commit message
+
+```{r}
+
+```
+
+###Module 6:
+
+
+###Exercise 02 (due before class on Monday)
+
+Set up GitHub repo in GitHub workspace
+Add Dr. Di Fiore to repo (username "difiore")
+Clone repo to your computer
+Create an RMarkdown or Quarto document
