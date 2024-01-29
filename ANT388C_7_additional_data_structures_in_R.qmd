@@ -1,0 +1,184 @@
+---
+title: "ANT388C_7_additional_data_structures_in_R"
+author: "Erika Carlson"
+date: 2024-01-29
+format: html
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Housekeeping
+Can delete repositories for exercise-02a and -02b
+Can include .Rproj in gitignore to there aren't so many versions floating around
+*ToDo:* Go through modules 7 and 8 this week
+
+## History files
+.Rhistory
+.Rapp.history
+
+## Session Data files
+.RData
+.RDataTmp
+
+## User specific files
+.Ruserdata
+.Rproj
+
+
+# Additional Data Structures in R {#module-07}
+
+## Matricies
+Matricies are 2-D data structures
+
+- Every value inside the vector has to be the same atomic type (e.g. number, character, character string)
+- R coerces data into the most forgiving type
+
+```{r}
+m <- matrix(1:30, nrow = 5, ncol = 6) # byrow = FALSE by default
+m <- matrix(1:100, nrow = 5, ncol = 6, byrow = TRUE)
+# Warning message:
+# In matrix(1:100, nrow = 5, ncol = 6, byrow = TRUE) :
+#   data length [100] is not a sub-multiple or multiple of the number of columns [6]
+```
+
+in first iteration of `m`, sequence populates by columns (top to bottom)
+in second iteration of `m`, sequence populates by rows (left to right)
+
+Can figure out default values for a function using help menu or `?function()`
+
+
+## Arrays
+Arrays are n-dimensional data structures
+
+```{r}
+a <- array(data = 1:90, dim=c(5, 6, 3))
+dim(a) # [1] 5 6 3
+class(a) # [1] "array"
+attributes(a) # $dim
+              # [1] 5 6 3
+str(a) # int [1:5, 1:6, 1:3] 1 2 3 4 5 6 7 8 9 10 ...
+```
+
+
+## Subsetting vectors, matricies, arrays
+Can reference or extract certain elements from vectors, matricies, and arrays by subsetting them using their index positions
+
+```{r}
+# subsetting a vector
+v <- 1:100
+v
+f <- v[33:35]
+f
+v[c(1, 4, 5, 6, 56, 56)]
+v <- c("a", "b", "c", "d")
+v[1]
+v[c(4, 1, 4, 1)]
+v[-c(1)] # outputs everything in vector except what is listed inside brackets
+
+# subsetting an array
+m <- matrix(1:30, 5, 6) # can omit the names of the arguments (but have to remember what they are and their positions in the function)
+m[nrow = 2:4, ncol = 3:4]
+a <- array(dim = c(5,6, 3, 3), data = 1:270)
+a[2:4, 3:4, 2:3, 1]
+```
+
+
+## Data structures - Lists and Dataframes
+
+Data frames and lists can be used to group together a heterogenous mix of ***R*** structures and objects
+
+```{r}
+s <- c("this", "is", "a", "vector", "of", "strings") # vector of string characters
+m <- matrix(data = 1:40, nrow = 5, ncol =8) # matrix
+b <- FALSE # boolean varaible
+l <- list(s, m, b)
+l <- list(string = s, matrix = m, bool = b) # naming elements of the list
+attributes(l)
+```
+
+
+### Subsetting lists
+
+You can reference of extract elements from a list similarly to how you would from other data structure, except you use double brackets [[ ]] to reference a single element in a list
+
+```{r}
+l[[2]]
+
+# and access elements contained within an element in the list
+l[[2]][2, 6]
+
+l[2] # outputs $matrix as the first element, then the string of numbers
+```
+
+### Creating a data frame manually
+
+```{r}
+df <- data.frame(
+  firstNmae = c("Rick", "Negan", "Dwight", "Maggie", "Michonne"),
+  community = c("Alexandria", "Saviors", "Saviors", "Hilltop", "Alexandria"),
+  sex = c("M", "M", "M", "F", "F"),
+  age = c(42, 40, 33, 28, 31)
+)
+df
+```
+
+or from an external source
+
+```{r}
+df <- read.csv(
+  file = "~/Downloads/CPDS-1960-2014-reduced.csv",
+  sep = ",",
+  header = TRUE,
+  stringsAsFactors = FALSE
+)
+df
+```
+
+or using tidyverse `read_csv()` for .csv files
+
+```{r}
+# library(tidyverse)
+f <- file.choose() # will open a window, navigate to folder/file of interest
+df <- read_csv(
+  file = f,
+  col_names = TRUE
+)
+head(df)
+class(df)
+str(df)
+dplyr::glimpse(df)
+
+```
+
+or using `read_excel()` to read in .xlsx or .xls
+
+```{r}
+# library(readxl)
+f <- file.choose()
+df <- read_excel(
+  path = f, 
+  sheet = 1,
+  col_names = TRUE
+)
+head(df)
+class(df)
+str(df)
+```
+## Preliminaries {Module-08}
+ 
+GO TO: https://github.com/difiore/ada-2024-datasets, and download the three versions of "CPDS-1960-2014-reduced" file and save them locally
+
+This is a version of the Comparative Political Data Set (CPDS), which is “a collection of political and institutional country-level data provided by Prof. Dr. Klaus Armingeon and collaborators at the University of Berne. The dataset consists of annual data for 36 democratic countries for the period of 1960 to 2014 or since their transition to democracy” (Armingeon et al. 2016). The full dataset consists of 300 variables, which I have pared down to a smaller set of economical and population size variables.
+
+### Reading comma-separated (".csv") text files in base R
+
+```{r}
+f <- "/Users/erc2866/Downloads/CPDS-1960-2014-reduced.csv"
+d <- read.table(f, header = TRUE, 
+                sep = ",", 
+                stringsAsFactors = FALSE)
+head(d) # shows the first 6 lines of data
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+The `setup=FALSE` option disables the running of code (only text is displayed).
