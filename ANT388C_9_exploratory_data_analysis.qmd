@@ -1,0 +1,39 @@
+---
+title: "ANT388C_9_exploratory_data_analysis"
+author: "Erika Carlson"
+date: 2024-01-31
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+## **ToDo:** Modules (8) 9 and 10
+
+## Preliminaries for Module 9
+
+Install (sjmisc)
+```{r}
+install.packages("sjmisc")
+```
+
+load tidyverse
+```{r}
+library(tidyverse)
+```
+
+## Highlights
+
+- Exploratory data analysis
+- Attaching and detaching dataframes
+- "tidy" data
+- Practice working with data and making visualizations
+- Introduction to the "grammar of graphics" (ggplot2) package
+
+## Exploratory data analysis
+
+- Examine the data set visually
+- Summarize the main characteristics of your variables (central tendency, distribution, outliers)
+- Check for various issues that may complicate further analysis (e.g., missing data)
+- **Best practice:** Clean and wrangle datasets with code, rather than changing the raw data set (documentation!)
+
+
