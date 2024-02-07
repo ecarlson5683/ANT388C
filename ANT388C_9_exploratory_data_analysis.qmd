@@ -207,7 +207,7 @@ The `summary()` function from {base} ***R*** provides a quick overview of each v
 - Load the "Country-Data-2016" dataset into a data frame variable, **d**, and summarize the variables in that data frame. You can load the file any way you want, e.g., load from a local file or access the data straight from ***GitHub***, as in the code below.
 
 ```{r}
-# using {base} R
+# using {base} R (this version did not work for me)
 f <- curl("https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/Country-Data-2016.csv")
 d <- read.csv(f, header = TRUE, sep = ",", stringsAsFactors = FALSE)
 d <- as_tibble(d) # I like tibbles!
@@ -226,7 +226,11 @@ names(d)
 > **HINT:** There are a couple of ways to do this... try `summary()` and `median()` (for the latter, you'll need to use the `na.rm=TRUE` argument).
 
 ```{r}
-summary(d)
+# 5 number summary
+summary(d$area)
+summary(d$population)
+
+# median only
 median(d$area, na.rm=TRUE)
 median(d$population, na.rm=TRUE)
 ```
@@ -236,25 +240,21 @@ median(d$population, na.rm=TRUE)
 > **HINT:** Check out the `order()` function.
 
 ```{r}
-d$density <- d$population/d$area # using base R
-d <- d %>% mutate(density = population/area) # using tidyverse
+d$density <- d$population/d$area
+d <- d[order(d$density, decreasing = TRUE), ]
+d[1:10, ] # 10 most dense
 
-d <- d[order(d$density, decreasing = TRUE),] # or
-d <- d[order(-d$density),]
-d[1:10,]
-d <- d[order(d$density),]
-d[1:10,]
+d <- d[order(d$density), ]
+d[1:10] # 10 least dense
 ```
 
 - Use subsetting or filtering to extract data from the 20 largest countries into a new variable, **s**. What are the median area and population size of these countries?
 
 ```{r}
-s <- d[order(-d$population),]
-s <- s[1:20,]
+s <- d[order(d$population, decreasing = TRUE), ]
+s <- s[1:20, ]
 med_area <- median(s$area, na.rm = TRUE)
-med_area
 med_pop <- median(s$population, na.rm = TRUE)
-med_pop
 ```
 
 - Extract data from all countries beginning with the letters "A" through "F". What are the mean area and population size of these countries?
@@ -264,6 +264,9 @@ med_pop
 ```{r}
 s <- d[grep(pattern = "^[A-F]", d$country), ]
 summary(s)
+
+mean(s$population, na.rm = TRUE) # to get mean specifically
+mean(s$area, na.rm = TRUE)
 ```
 
 Doing the same thing with {dplyr} verbs (see [**Module 10**](#module-10)) is easier...
@@ -324,12 +327,12 @@ s %>% summarytools::view()
 detach(package:summarytools)
 ```
 
-With `makeDataReport()` from the {dataMaid} package, you can generate a nicely formated report that gets written out to a location of your choice. Again, the output of this code is not shown as it generates a report in an external file.
+With `makeDataReport()` from the {dataMaid} package, you can generate a nicely formatted report that gets written out to a location of your choice. Again, the output of this code is not shown as it generates a report in an external file.
 
 ```{r}
 #| eval: false
 library(dataMaid)
-# this code below produces a formated report, with the type of report
+# this code below produces a formatted report, with the type of report
 # specified by `output=`
 makeDataReport(d,
   output = "html",
@@ -362,28 +365,20 @@ The `barplot()` function is also useful taking a quick look at crude data, with 
 
 ```{r}
 par(mfrow = c(1,2))
+boxplot(d$population, ylab = "Population")
+barplot(d$population, xlab = "Case", ylab = "Population")
+dotchart(d$population, xlab = "Population", ylab = "Case")
+
 d$log_population <- log(d$population)
 d$log_area <- log(d$area)
 
-boxplot(d$population, ylab = "Population")
-boxplot(d$area, ylab = "Area")
+boxplot(d$log_population, ylab = "log(Population)")
+barplot(d$log_population, xlab = "Case", ylab = "log(Population)")
+dotchart(d$log_population, xlab = "log(Population)", ylab = "Case")
 
-boxplot(d$log_population, ylab = "log_Population")
-boxplot(d$log_area, ylab = "log_Area")
-
-
-barplot(d$population, xlab = "Case", ylab = "Population")
-barplot(d$area, xlab = "Case", ylab = "Area")
-
-barplot(d$log_population, xlab = "Case", ylab = "log_Population")
-barplot(d$log_area, xlab = "Case", ylab = "log_Area")
-
-
-dotchart(d$population, xlab = "Population", ylab = "Case")
-dotchart(d$area, xlab = "Area", ylab = "Case")
-
-dotchart(d$log_population, xlab = "log_Population", ylab = "Case")
-dotchart(d$log_area, xlab = "log_Area", ylab = "Case")
+boxplot(d$log_area, ylab = "log(Area)")
+barplot(d$log_area, xlab = "Case", ylab = "log(Area)")
+dotchart(d$log_area, xlab = "log(Area)", ylab = "Case")
 ```
 
 ### Plotting with {ggplot2} {.unnumbered}
@@ -393,14 +388,15 @@ As an alternative for plotting, we can use the "grammar of graphics" {ggplot2} p
 ```{r message=FALSE}
 # first, we use `tidyr::pivot_longer()` to convert our data from wide to long format
 # this is so we can use `facet.grid()`
+# to view multiple IVs or factors (w/ same DV) in the same graph
 
 # uncomment this to look at a different set of variables
-# d_long <- pivot_longer(d, c("log_population","log_area"),
-# names_to="Variable", values_to="Value")
+d_long <- pivot_longer(d, c("log_population","log_area"),
+names_to="Variable", values_to="Value")
 
 # uncomment this to look at a different set of variables
-# d_long <- pivot_longer(d, c("mammals","birds","reptiles","fishes"),
-# names_to="Variable", values_to="Value")
+d_long <- pivot_longer(d, c("mammals","birds","reptiles","fishes"),
+names_to="Variable", values_to="Value")
 
 d_long <-
   pivot_longer(d,
@@ -453,7 +449,7 @@ p
 
 ### Histograms {.unnumbered}
 
-The `hist()` function returns a histogram showing the complete empirical distribution of the data in binned categories, which is useful for checking skewwness of the data, symmetry, multi-modality, etc. Setting the argument `freq=FALSE` will scale the Y axis to represent the *proportion* of observations falling into each bin rather than the *count*.
+The `hist()` function returns a histogram showing the complete empirical distribution of the data in binned categories, which is useful for checking skewness of the data, symmetry, multi-modality, etc. Setting the argument `freq=FALSE` will scale the Y axis to represent the *proportion* of observations falling into each bin rather than the *count*.
 
 ### CHALLENGE {.unnumbered}
 
@@ -461,19 +457,19 @@ The `hist()` function returns a histogram showing the complete empirical distrib
 
 ```{r message=FALSE}
 par(mfrow = c(1, 2))  # sets up two panels side by side
-hist(log(d$population), 
+hist(d$log_population,
      freq = FALSE, 
-     col = "blue", 
+     col = "darkblue", 
      main = "Plot 1", 
-     xlab = "log(population size)", 
+     xlab = "log(population size)",
      ylab = "density", 
      ylim = c(0, 0.2))
-hist(log(d$area), 
+hist(d$log_area, 
      freq = FALSE, 
-     col = "red", 
+     col = "darkgreen", 
      main = "Plot 2", 
      xlab = "log(area)", 
-     ylab = "density", 
+     ylab = "density",
      ylim = c(0, 0.2))
 ```
 
@@ -482,7 +478,7 @@ hist(log(d$area),
 ```{r}
 hist(log(d$area), 
      freq = FALSE, 
-     col = "red", 
+     col = "darkred", 
      main = "Plot 2", 
      xlab = "log(area)", 
      ylab = "density", 
@@ -520,16 +516,15 @@ The `table()` function can be used to summarize counts and proportions for categ
 > **HINT:** We can combine `table()` with `sort()` and the argument `decreasing=TRUE` to get the desired answer straight away.
 
 ```{r}
-t <- sort(table(d$govt_form), decreasing=TRUE)
-t
+sort(table(d$govt_form), decreasing = TRUE)
 # 127 republics
 ```
 
 Doing the same thing with {dplyr} verbs (see [**Module 10**](#module-10)) provides nicer output...
 
 ```{r}
-t <-
-  group_by(d, govt_form) %>%
+t <- d %>% 
+  group_by(govt_form) %>%
   summarize(count = n()) %>%
   arrange(desc(count))
 t
@@ -548,12 +543,8 @@ Read in the dataset "KamilarAndCooperData", which contains a host of summary inf
 Spend some time exploring the data on your own and then make boxplots of **log(female body mass) \~ family**. Try doing this with {base} graphics and then look at how we might do in in {ggplot2}, which provides a standard "grammar of graphics" (see the [{ggplot2} documentation](http://docs.ggplot2.org/current/))
 
 ```{r message=FALSE}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
 f <- "https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/KamilarAndCooperData.csv"
 d <- read_csv(f, col_names = TRUE)
-head(d)
 ```
 
 ```{r message=FALSE}
@@ -562,20 +553,20 @@ library(kableExtra)
 ```
 
 ```{r}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
-s <- skim(d) # formats results to a wide table
+glimpse(d) # basic info of groups
+
+# nicer version with five number summary and histograms
+s <- skim(d)  # formats results to a wide table
 # here we make use of the `%>%` operator and {dplyr} verbs... see below
 s %>%
-  filter(skim_variable == "Scientific_Name" | skim_type == "numeric") %>%
-  rename(variable=skim_variable, missing=n_missing, mean=numeric.mean,
-    sd=numeric.sd, min=numeric.p0, p25=numeric.p25, median=numeric.p50,
-    p75=numeric.p75, max=numeric.p100, hist=numeric.hist) %>%
-  select(variable, missing, mean, sd, min, median, max, hist) %>%
-  # drop p25 and p75 for purposes of display
-  kable() %>%
-  kable_styling(font_size = 10, full_width = FALSE)
+    filter(skim_variable == "Scientific_Name" | skim_type == "numeric") %>%
+    rename(variable = skim_variable, missing = n_missing, mean = numeric.mean, sd = numeric.sd,
+        min = numeric.p0, p25 = numeric.p25, median = numeric.p50, p75 = numeric.p75,
+        max = numeric.p100, hist = numeric.hist) %>%
+    select(variable, missing, mean, sd, min, median, max, hist) %>%
+    # drop p25 and p75 for purposes of display
+kable() %>%
+    kable_styling(font_size = 10, full_width = FALSE)
 ```
 
 ```{r message=FALSE}
@@ -583,23 +574,22 @@ detach(package:kableExtra)
 detach(package:skimr)
 ```
 
-We can also make boxplots summarizing a numerical variable in relation to another categorical variable.
-
-Plotting using {base} graphics... the `~` operator can be read as "by".
-
 ```{r}
-boxplot(log(d$Body_mass_female_mean)~d$Family)
-```
+# boxplot of female body mass by family in {base R}
+boxplot(log(d$Body_mass_female_mean) ~ d$Family,
+        xlab = "Family",
+        ylab = "log(Female Body Mass)",
+        col = "lightblue")
 
-Alternatively, plotting using {ggplot2}...
-
-```{r}
-p <- ggplot(data=d, aes(x=Family, y=log(Body_mass_female_mean)))
-p <- p + geom_boxplot(na.rm=TRUE)
-p <- p + theme(axis.text.x=element_text(angle=90))
-p <- p + ylab("log(Female Body Mass)")
+# boxplot of female body mass by family in {ggplot2}
+p <- ggplot(data = d, 
+            aes(x = Family, y = log(Body_mass_female_mean))) + 
+  geom_boxplot(na.rm = TRUE) + 
+  theme(axis.text.x = element_text(angle = 90)) + 
+  ylab("log(Female Body Mass)")
 p
 ```
+
 
 ### Bivariate Scatterplots {.unnumbered}
 
@@ -610,10 +600,7 @@ Scatterplots are a natural tool for visualizing two continuous variables and can
 - Again using data from the "KamilarAndCooperData" dataset, plot the relationship between female body size and female brain size. Then, play with log transforming the data and plot again.
 
 ```{r}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
-par(mfrow=c(1,2)) # sets up two panels side by side
+par(mfrow = c(1, 2))  # sets up two panels side by side
 plot(x = d$Body_mass_female_mean, y = d$Brain_Size_Female_Mean)
 plot(x = log(d$Body_mass_female_mean), y = log(d$Brain_Size_Female_Mean))
 ```
@@ -624,15 +611,12 @@ The grammar for {ggplot2} is a bit more complicated... see if you can follow it 
 p <- ggplot(data=d, aes(x=log(Body_mass_female_mean),
                         y=log(Brain_Size_Female_Mean),
                         color = factor(Family)
-                        )) # first, we build a plot object and color points by Family
-# then we modify the axis labels
-p <- p + xlab("log(Female Body Mass)") + ylab("log(Female Brain Size)")
-# then we make a scatterplot
-p <- p + geom_point(na.rm=TRUE)
-# then we modify the legend
-p <- p + theme(legend.position="bottom", legend.title=element_blank())
-# and, finally, we plot the object
-p
+                        )) + # build a plot object and color points by Family
+  xlab("log(Female Body Mass)") + 
+  ylab("log(Female Brain Size)") + # modify the axis labels
+  geom_point(na.rm=TRUE) + # make a scatterplot
+  theme(legend.position="bottom", legend.title=element_blank()) # modify the legend
+p # plot the object
 ```
 
 We can use the cool package {ggExtra} to add marginal univariate plots to our bivariate scatterplots, too.
@@ -640,6 +624,7 @@ We can use the cool package {ggExtra} to add marginal univariate plots to our bi
 ```{r}
 library(ggExtra)
 ggMarginal(p, type = "densigram") # try with other types, too!
+ggMarginal(p, type = "violin")
 detach(package:ggExtra)
 ```
 
@@ -687,17 +672,18 @@ detach(package:car)
 - Build your own bivariate scatterplot of **log(MaxLongevity_m)** by **log(Body_mass_female_mean)** using the "KamilarAndCooperData" dataset.
 
 ```{r}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
-p <- ggplot(data=d, aes(x=log(Body_mass_female_mean),
-  y=log(MaxLongevity_m)))
-p <- p + geom_point(na.rm = TRUE)
-p <- p + geom_smooth(method="lm", na.rm = TRUE)
-p
+p <- ggplot(data=d, aes(x=log(MaxLongevity_m),
+                        y=log(Body_mass_female_mean)
+                        )) + # build a plot object and color points by Family
+  xlab("log(Maximum Longevity (m))") + 
+  ylab("log(Female Body Mass)") + # modify the axis labels
+  geom_point(na.rm=TRUE) + # make a scatterplot
+  geom_smooth(method = "lm", na.rm = TRUE) # add a regression line
+  theme(legend.position="bottom", legend.title=element_blank()) # modify the legend
+p # plot the object
 ```
 
-We can also use either the `pairs()` function from {base} ***R***, the `scatterplotMatrix()` function from the {car} package, or the `pairs.panel()` function from the {psych} package to do multiple scatterplots simulaneously. The `ggpairs()` function from the {GGally} package can also be used, but it is slower.
+We can also use either the `pairs()` function from {base} ***R***, the `scatterplotMatrix()` function from the {car} package, or the `pairs.panel()` function from the {psych} package to do multiple scatterplots simultaneously. The `ggpairs()` function from the {GGally} package can also be used, but it is slower.
 
 ### CHALLENGE {.unnumbered}
 
@@ -706,25 +692,26 @@ Select the variables **Brain_Size_Female_Mean**, **Body_mass_female_mean**, **Me
 > **NOTE:** Here we are using the `select()` function from the {dplyr} package, which we cover in more detail in [**Module 10**](#module-10).
 
 ```{r}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
-s <-
-  select(d,
-    c(
-      "Brain_Size_Female_Mean",
-      "Body_mass_female_mean",
-      "MeanGroupSize",
-      "WeaningAge_d",
-      "MaxLongevity_m",
-      "HomeRange_km2",
-      "DayLength_km"
-    )
-  )
-pairs(s[,1:ncol(s)]) # or
-pairs(data=s, ~.) # NAs are ignored by default
-# adding argument `upper.panel=NULL` will suppress plots above the diagonal
+# my way
+library(car)
+p <- d %>% 
+  select(Brain_Size_Female_Mean, Body_mass_female_mean, MeanGroupSize, WeaningAge_d, MaxLongevity_m, HomeRange_km2, DayLength_km) %>% 
+  scatterplotMatrix(., 
+                    smooth = TRUE, 
+                    regLine = list(method = lm, lty = 1, lwd = 2),
+                    ellipse = TRUE, 
+                    upper.panel = NULL)
+detach(package:car)
 ```
+
+in {base R}
+```{r}
+s <- select(d, c("Brain_Size_Female_Mean", "Body_mass_female_mean", "MeanGroupSize",
+    "WeaningAge_d", "MaxLongevity_m", "HomeRange_km2", "DayLength_km"))
+pairs(s[, 1:ncol(s)])  # or
+pairs(data = s, ~.)  # NAs are ignored by default
+```
+
 
 The {car} package function `scatterplotMatrix()` provides a more customizable interface to the `pairs()` function from {base} ***R***. It includes a neat rug plot for each variable.
 
@@ -768,6 +755,8 @@ detach(package:GGally)
 
 Finally, we can do a nice correlation plot using the {corrplot} package, where we get a matrix of correlations among variables and a graphical representation of the strength and direction of the bivariate correlation coefficients among them.
 
+> NOTE: This is the one I would use / have seen published
+
 ```{r message=FALSE}
 library(corrplot)
 cor = cor(s, use="pairwise.complete.obs")
@@ -780,22 +769,26 @@ detach(package:corrplot)
 Above, we saw the typical {base} ***R*** method for laying out plots, using the `par()` command with the `mfrow=` argument to set up a grid of panels in which to plot to the current graphics output device. There are, however, several easier ways for combining plots into custom layouts. Three alternatives are provided in the {patchwork}, {cowplot}, and {gridExtra} packages. Each starts by generating plot objects, typically using {ggplot2}. First, we create 3 plot objects using the KamilarAndCooper dataset:
 
 ```{r}
-p1 <- ggplot(data=d, aes(x=log(Body_mass_female_mean), 
-  y=log(MaxLongevity_m)))
-p1 <- p1 + geom_point(na.rm = TRUE)
-p1 <- p1 + geom_smooth(method="lm", na.rm = TRUE)
-p1 <- p1 + xlab("log(Female Body Size)") + ylab("log(Lifespan)")
+p1 <- ggplot(data=d, 
+             aes(x=log(Body_mass_female_mean), 
+                 y=log(MaxLongevity_m))) + 
+  geom_point(na.rm = TRUE) + 
+  geom_smooth(method="lm", na.rm = TRUE) + 
+  xlab("log(Female Body Size)") + ylab("log(Lifespan)")
 
-p2 <- ggplot(data=d, aes(x=log(Body_mass_male_mean),
-  y=log(MaxLongevity_m)))
-p2 <- p2 + geom_point(na.rm = TRUE)
-p2 <- p2 + geom_smooth(method="lm", na.rm = TRUE)
-p2 <- p2 + xlab("log(Male Body Size)") + ylab("log(Lifespan)")
+p2 <- ggplot(data=d, 
+             aes(x=log(Body_mass_male_mean),
+                 y=log(MaxLongevity_m))) + 
+  geom_point(na.rm = TRUE) + 
+  geom_smooth(method="lm", na.rm = TRUE) + 
+  xlab("log(Male Body Size)") + ylab("log(Lifespan)")
 
-p3 <- ggplot(data=d, aes(x=Family, y=log(Body_mass_female_mean)))
-p3 <- p3 + geom_boxplot(na.rm=TRUE)
-p3 <- p3 + theme(axis.text.x=element_text(angle=90))
-p3 <- p3 + xlab("Family") + ylab("log(Female Body Mass)")
+p3 <- ggplot(data=d, 
+             aes(x=Family, 
+                 y=log(Body_mass_female_mean))) + 
+  geom_boxplot(na.rm=TRUE) + 
+  theme(axis.text.x=element_text(angle=90)) + 
+  xlab("Family") + ylab("log(Female Body Mass)")
 ```
 
 Once we have these plot objects, we can arrange them in custom ways using these different packages. Some alternative ways of arranging these three plots in 2 rows, with 2 panels in the top row and 1 in the bottom row, are given below...
@@ -809,6 +802,8 @@ detach(package:patchwork)
 ```
 
 We can also use {cowplot}...
+
+How to make the C not overlap with the y-axis label?
 
 ```{r warning=FALSE, message=FALSE}
 library(cowplot)
@@ -829,6 +824,8 @@ detach(package:cowplot)
 ```
 
 ... or {gridExtra}
+
+No panel labels
 
 ```{r warning=FALSE, message=FALSE}
 library(gridExtra)
