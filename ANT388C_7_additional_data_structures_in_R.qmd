@@ -4,7 +4,7 @@ author: "Erika Carlson"
 date: 2024-01-29
 format: html
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 # Housekeeping
@@ -680,44 +680,30 @@ Finally, ***R*** has three special data values that it uses in a variety of situ
 - Be sure to fill the matrix **ROWWISE**
 
 ```{r}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
-m <-
-  matrix(
-    c(3, 0, 1 , 23, 1, 2, 33, 1, 1, 42, 0, 1, 41, 0, 2),
-    nrow = 5,
-    ncol = 3,
-    byrow = TRUE
-  )
+m <- matrix(c(3,0,1,23,1,2,33,1,1,42,0,1,41,0,2), 
+            nrow = 5, 
+            ncol = 3, 
+            byrow = TRUE)
 m
 ```
 
 - Then, coerce the matrix to a data frame
 
 ```{r}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
-(d <- as.data.frame(m))
+d <- as.data.frame(m)
+d
 ```
 
 - As a data frame, coerce the second column to be *logical* (i.e., Boolean)
 
 ```{r}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
-(d[,2] <- as.logical(d[,2]))
+(d[ ,2] <- as.logical(d[, 2]))
 ```
 
 - As a data frame, coerce the third column to be a *factor*
 
 ```{r}
-#| code-fold: true
-#| code-summary: "Show Code"
-#| attr.output: '.details summary="Show Output"'
-(d[,3] <- as.factor(d[,3]))
+(d[ ,3] <- as.factor(d[ ,3]))
 ```
 
 - When you are done, use the `str()` command to show the data type for each variable in your dataframe.
@@ -733,6 +719,7 @@ str(d)
 A "data table" is a structure introduced in the package {data.table} that provides an enhancements to the data frame structure, which is the standard data structure for storing tabular data in {base} ***R***. We use the same syntax for creating a data table...
 
 ```{r}
+# library(data.table)
 dt <-
   data.table(
     firstName = c("Rick", "Negan", "Dwight", "Maggie", "Michonne"),
@@ -778,6 +765,7 @@ The data table structure also allows us more straightforward syntax - and implem
 A "tibble" is another newer take on the data frame structure, implemented in the package {tibble} (which is loaded as part of {tidyverse}). The structure was created to keep the best features of data frames and correct some of the more frustrating aspects associated with the older structure. For example, like data tables, tibbles do not by default change the input type of a variable from *character* to *factor* when the tibble is created.
 
 ```{r}
+# library(tidyverse)
 t <-
   tibble(
     firstName = c("Rick", "Negan", "Dwight", "Maggie", "Michonne"),

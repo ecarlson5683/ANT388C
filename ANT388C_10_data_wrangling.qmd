@@ -1,0 +1,264 @@
+---
+title: "ANT388C_10_data_wrangling"
+author: "Erika Carlson"
+date: 2024-02-05
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+**ToDo:** exercise 03 (and finish module 9.6 - 10)
+
+## Preliminaries
+
+load in the dataset from Kamilar and Cooper (2013) which contains a bunch of ecological and morphological data on 213 species of nonhuman primates
+
+```{r}
+library(tidyverse)
+f <- "https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/KamilarAndCooperData.csv"
+d <- read_csv(f, col_names = TRUE) # creates a tibble
+```
+
+
+
+## Boxplots
+
+Displays the median, 25th percentile, 75th percentile (line and boundaries of the box)
+and the minimum (minimum value in the data, `Q1 - 1.5*IQR`) and maximum (maximum value in the data, `Q3 + 1.5*IQR`) with outliers displayed as dots on either end
+
+using {base R}
+
+```{r}
+boxplot(log(d$Body_mass_female_mean))
+stripchart(log(d$Body_mass_female_mean), 
+           method = "jitter",
+           col = "blue",
+           vertical = TRUE,
+           add = TRUE) # super impose new visualization on top of the old one!
+
+boxplot(data = d, log(Body_mass_female_mean) ~ Family)
+stripchart(data = d, log(Body_mass_female_mean) ~ Family,
+           method = "jitter",
+           col = "blue",
+           vertical = TRUE,
+           add = TRUE)
+```
+
+
+using grammar of graphics {ggplot2}
+
+```{r}
+# create a plot object first
+ggplot(data = ..., 
+       mapping = aes(...)) + # aesthetics of the plot
+  geom_...(...) + # type of plot
+  theme(...) # styling of the plot
+```
+
+```{r}
+# viewing whole data set
+p <- ggplot(data = d, 
+            aes(x = " ", y = log(Body_mass_female_mean))) + 
+  geom_boxplot(na.rm = TRUE)
+p
+
+p <- p + geom_jitter(color = "purple", width = 0.1)
+p
+
+# subsetting by family
+p <- ggplot(data = d, aes(x = Family, y = log(Body_mass_female_mean))) +
+  geom_boxplot(na.rm = TRUE) +
+  geom_point(color = "blue", position = "jitter")
+p
+
+p <- p + theme(axis.text.x = element_text(angle = 90))
+p <- p + ylab("log(Female Body Mass)")
+p
+```
+
+
+
+## Histogram
+
+using {base R}
+
+```{r}
+hist(log(d$Body_mass_female_mean))
+
+hist(log(d$Body_mass_female_mean), freq = FALSE)
+
+# add average line
+lines(density(log(d$Body_mass_female_mean), 
+              na.rm = TRUE), 
+      col = "blue") # do not have to specify add = TRUE
+
+# add confidence interval boundaries
+abline(v = quantile( # v argument tells abline to draw a vertical line
+  log(d$Body_mass_female_mean),
+  prob = c(0.025, 0.975),
+  na.rm = TRUE
+),
+col = "red") # do not have to specify add = TRUE
+```
+
+
+using {ggplot2}
+
+```{r}
+p <- ggplot(data = d, 
+            aes(log(Body_mass_female_mean))
+            )
+
+(p + geom_histogram(binwidth = 2))
+
+(p + geom_histogram(bins = 9))
+
+(p + geom_histogram(bins = 9, aes(y = ..density..)) +
+    geom_density())
+
+p <- ggplot(data = d, 
+            aes(log(Body_mass_female_mean))
+            ) +
+  geom_histogram(bins = 9, aes(y = ..density..)) + 
+  geom_density() +
+  geom_vline(xintercept = 
+               quantile(
+                 log(d$Body_mass_female_mean),
+                 prob = c(0.025, 0.25, 0.5, 0.75, 0.975),
+                 na.rm = TRUE
+                 ),
+             color = "red"
+             )
+p
+```
+
+
+
+## Scatterplots
+
+in {base R}
+
+```{r}
+plot(x = log(d$Body_mass_female_mean),
+     y = log(d$Brain_Size_Female_Mean)
+     )
+
+p <- ggplot(data = d, 
+            aes(x = log(Body_mass_female_mean),
+                y = log(Brain_Size_Female_Mean)))
+(p + geom_point(na.rm = TRUE))
+
+p <- p + geom_point(aes(color = factor(Family)),
+                    na.rm = TRUE)
+
+# modify axes
+p <- p + xlab("log(Female Body Mass)") +
+  ylab("log(Female Brain Size")
+
+# add legend
+p <- p + theme(legend.position = "bottom",
+               legend.title = element_blank()
+               )
+
+# add a regression line
+
+p <- p + geom_smooth(method = "lm", na.rm = TRUE)
+```
+
+
+
+## Data Wrangling
+
+dplyr functions work with pipes and expect tidy data.
+
+In tidy data 
+- Each variable is in its own column
+- Each observation, or case, is in its own row
+- `x %>% f(y)` becomes `f(x,y)`
+
+Important functions in dplyr
+- `filter()`
+- `select()`
+- `arrange()`
+- `group_by()`
+- `summarize()`
+- `mutate()`
+
+More efficient than {base R}
+
+
+### filtering
+
+using {base R}
+```{r}
+s <- d[d$Family == "Hominidae" & d$Mass_Dimorphism > 2, ]
+```
+
+using {dplyr}
+
+do not use "quotes" around variable names, but can use `back quotes`
+```{r}
+s <- filter(d, Family == "Hominidae" & `Mass_Dimorphism` > 2)
+```
+
+
+### selecting
+
+using {base R}
+```{r}
+s <- d[ , c("Family", "Genus", "Body_mass_male_mean")]
+```
+
+using {dplyr}
+
+do not use "quotes" around variable names, but can use `back quotes`
+```{r}
+# missed this part
+s <- select(d, Family, Genus, Body_mass_male_mean)
+```
+
+### sorting
+
+using {base R}
+```{r}
+s <- d[order(d$Family, d$Genus, -d$Body_mass_male_mean), ]
+```
+
+using {dplyr}
+
+```{r}
+s <- arrange(d, Family, Genus, desc(Body_mass_male_mean))
+```
+
+
+### summarizing, by group
+
+using {base R}
+```{r}
+s <- aggregate(d$Body_mass_female_mean ~ d$Family, FUN = "mean", na.rm = TRUE)
+```
+
+using {dplyr}
+
+```{r}
+# summarize creates a new variable that aggregates the data in another variable
+s <- summarise(
+  group_by(d, Family),
+  avgF = mean(Body_mass_female_mean, na.rm = TRUE)
+)
+
+s <- group_by(d, Family) %>% 
+  summarise(avgF = mean(Body_mass_female_mean, na.rm = TRUE))
+
+s <- d %>% 
+  group_by(Family) %>% 
+  summarise(avgF = mean(Body_mass_female_mean, na.rm = TRUE))
+s
+```
+
+
+# mutating to create a new variable
+
+```{r}
+s <- s %>% mutate(new = paste0(Family, "-", avgF))
+```
