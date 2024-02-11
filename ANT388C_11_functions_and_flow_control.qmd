@@ -1,0 +1,135 @@
+---
+title: "ANT388C_11_functions_and_flow_control"
+author: "Erika Carlson"
+date: 2024-02-07
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+**ToDo:** 
+- Monday (2/12)
+  - Exercise 03 due Monday (submit URL)
+  - Complete Module 11 due Monday
+  - Find a paper and dataset for your "Data Analysis Replication" assignment (DRYAID or OSF)
+- Monday (2/19)
+  - Exercise 04 due following Monday
+  
+```{r}
+library(tidyverse)
+f <- "https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/IMDB-movies.csv"
+d <- read_csv(f, col_names = TRUE) # creates a tibble
+```
+
+Conditionals
+
+- `if` (test) (do this) `else` (do that)
+- `ifelse`(test, do this if true, do this if false)
+- `if_else`(test, do this if true, do this if false)
+- `case_when`(
+    case1 ~ result1
+    case2 ~ result2
+    case3 ~ result3
+    TRUE ~ all others
+    )
+- can have multiple things when testing with `case_when()`
+
+
+## Coding challenges
+
+Add a new variable to the data frame *comedy* that is TRUE if one of the *genres* listed is "Comedy" and FALSE if none of the genres listed is "Comedy"
+
+```{r}
+d <- d %>% 
+  mutate(comedy = if_else(str_detect(genres, "Comedy"), TRUE, FALSE))
+```
+
+Output the total number of "Comedy" genre movies
+
+```{r}
+# my way
+s <- d %>% 
+  filter(comedy == TRUE) %>% 
+  summarize(num_comedy = length(comedy))
+
+# Tony's way
+s <- d %>% 
+  summarise(count = n(), 
+            num_comdey = sum(comedy, na.rm = TRUE))
+```
+
+Add a new variable for "ranking" where ranking = "low" if averageRating = 0 to 3.3, "med" if averageRating > 3.3 to 6.7 and high if averageRanking > 6.7 to 10
+
+```{r}
+d <- d %>% 
+  mutate(ranking = case_when(averageRating <= 3.3 ~ "low",
+                             averageRating <= 6.7 ~ "med",
+                             averageRating <= 10 ~ "high")) # evaluates first case first
+```
+
+Try to use summarize() to pull out run times
+
+```{r}
+r <- d %>% 
+  select(ranking, runtimeMinutes) %>% 
+  group_by(ranking) %>% 
+  summarize("run time" = mean(runtimeMinutes))
+
+# not worked out
+```
+
+## Loops
+
+for (i in 1:...) (do this)
+
+Write code to loop through all the rows in the dataset
+
+```{r}
+for (i in 1:nrow(d)){
+  print(i)
+}
+```
+
+Write code to loop through all the rows in the data set and print out the cumulative running time of the movies
+
+```{r}
+# go through each line of the data frame
+# some variable that represents the cumulative total in each iteration of the loop
+# some way to add to that cumulative total with each loop
+# getting an error
+
+t <- 0 # make t a numeric 
+
+for (i in 1:nrow(d)){
+  t <- ifelse(is.na(d[i, c("runtimeMinutes")]), t, t + d[i, c("runtimeMinutes")])
+  print(t)
+  }
+# Error in FUN(left, right) : non-numeric argument to binary operator
+
+
+# easier way to get the cumulative run time
+cumsum(replace_na(d$runtimeMinutes, 0))
+
+# another loop example for reading in multiple files
+for (name in c("a", "b", "c")){
+  d <- read_csv(name, colnames = TRUE)
+}
+
+```
+
+
+## Exercise 04 introduction
+
+Program a word game with a buddy from class
+
+Step 1: Need to read in 2 files at once (loop function?) to create a solution list and valid word list
+
+Step 2: Winnow solution list to words that are in valid word list
+- intersection operator
+
+Step 3: Filter solution list for words that are not five letters in length, then randomly chooses a word from those that remain, and split that word into character vector that is five parts long
+
+Step 4: set number of guesses to 6 (could change default if desired)
+
+
+
