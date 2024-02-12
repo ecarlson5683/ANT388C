@@ -1,0 +1,115 @@
+---
+title: "ANT388C_12_central_tendency_and_spread"
+author: "Erika Carlson"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+# Class 8: Functions and the Wordle Coding Challenge
+
+## Functions
+
+Function psuedo code
+
+```{r}
+my_function <- function(<argument list>) {
+  <function code>
+  return(<value>)
+}
+```
+functions should have certain default values than can be modified
+
+A toy function
+```{r}
+# x should be tabular data
+my_function <- function(x, reps = 2){
+  for (i in 1:reps){
+    print(x)
+  }
+  for (i in 1:nrow(x)){
+    print(x[i, ])
+  }
+  return(NULL)
+}
+
+df <- tibble(name = c("Erika", "Ryan", "Steven", "Stephen"), 
+            year = c(3, 6, 6, 3),
+            hometown = c("Elburn", "Bardstown", "Albuquerque", "El Paso"))
+
+my_function(df)
+```
+
+
+a different toy function
+```{r}
+# x should be tabular data
+my_function <- function(x, condition, variable){
+  library(tidyverse)
+  x <- x %>% filter(variable %in% condition)
+  return(x)
+}
+```
+
+
+## Inner Joins
+
+Matching items in the left- and right-hand tables, only gives index matches
+
+## Outer Joins
+
+* `left_join()` pulls out unique joins from the left-hand table, will fill in `NA` for unmatched right-hand rows
+* `right_join()` pulls out unique joins from right-hand table, will fill in `NA` for unmatched left-hand rows
+* `full_join()` pulls out unique joins from both left- and right-hand tables, will fill in `NA` for unmatched rows
+
+## Practicing Joins
+
+Load 2 datasets from GitHub
+
+  **papers.csv as "p"**
+  
+  **creators.csv as "c"**
+  
+```{r}
+c <- "https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/creators.csv"
+c <- read_csv(c, col_names=TRUE)
+
+p <- "https://raw.githubusercontent.com/difiore/ada-2024-datasets/main/papers.csv"
+p <- read_csv(p, col_names=TRUE)
+
+# split author list
+library(tidyverse)
+p <- p %>% 
+  separate_wider_delim(cols = Author,
+                       delim = ";",
+                       names = c("First Author", "A2", "A3", "A4"),
+                       too_few = "align_start", too_many = "drop")
+head(p)
+
+c <- c %>% 
+  distinct()
+head(c)
+```
+
+Join data frames
+```{r}
+# these give same number of rows, but in different order and diff index header
+inner <- inner_join(c, p, by = c("fullName" = "First Author"))
+inner <- inner_join(p, c, by = c("First Author" = "fullName"))
+
+# left join
+left <- left_join(c, p, by = c("fullName" = "First Author"))
+
+# right join
+right <- right_join(c, p, by = c("fullName" = "First Author"))
+```
+
+Find publications
+```{r}
+find_pubs <- tibble(fullName = c("Di Fiore, Anthony"))
+first <- inner_join(find_pubs, p, by = c("fullName" = "First Author"))
+view(first)
+```
+
+
+
