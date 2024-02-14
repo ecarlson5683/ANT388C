@@ -1,0 +1,189 @@
+---
+title: "ANT388C_13_probability_and_distributions"
+author: "Erika Carlson"
+format: html
+editor_options: 
+  chunk_output_type: console
+---
+
+## Class 9
+
+```{r}
+install.packages("manipulate")
+install.packages("mosaic")
+install.packages("radiant")
+```
+
+Statistics - Big Ideas
+
+We have a **population** about which we may know little
+
+We collect a set of observations of elements or processes in that population i.e., a **sample**
+
+We use **statistics** to summarize, reduce, or describe data that has some empiracal **distribution**
+
+We expect that statistics based on a sample will be good **estimates** of population-level **parameters** that are likewise descriptors of the distribution of the variable of interest in the larger population
+
+A **statistic** is some function of the data alone...a combination based on a finite amount of data
+
+Some key summarizing (descriptive) aspects of statistics...a measure of location (central tendency) for a distribution and a measure of spread or scatter around that location
+
+location
+
+* mean (average)
+* median
+* mode
+* harmonic mean (geometric mean = 1/n)
+
+spread
+
+* mean deviation (average of abs values of deviations from mean)
+* mean squared deviation (average of squared deviations from mean) = variance
+* standard deviation (square root of variance)
+* population variance = a parameter = SS/N = sigma^2
+  + N = population size
+  + sum((x-mean(x))^2)/length(x)
+* sample variance = a statistic = SS/(n-1) = s^2
+  + n = sample size
+  + var()
+* population standard deviation = a parameter = sigma
+  + radiant::sdpop()
+  
+  
+## Challenge
+
+Write two functions, one to calculate the variance for a vector of a population and the other to calculate the variance for a vector of a sample
+
+```{r}
+population_variance <- function(x){
+  sum((x-mean(x))^2)/length(x)
+}
+
+population <- c(1:10)
+
+population_variance(population)
+
+
+sample_variance <- function(x){
+  var(x)
+}
+  
+sample <- c(1:10)
+
+sample_variance(sample) # sample variance is larger than population variance (lose degree of freedom)
+
+# can wrap in lists to return multiple things
+population_variance_list <- function(x){
+  var <- sum((x-mean(x))^2)/length(x)
+  r <- list(vector = x, variance =var) # list wrapper
+  return(r)
+}
+```
+
+
+One key aspect of statistics associated with **classical** or **frequentist** statistical inference is that some are associated with well-defined mathematical distributions
+
+Specifically, some statistics are estimates of the **parameters** of distributions
+
+Parameters such as **mu** and **sigma** of the Gaussian (normal) distribution or **lambda** of the Poisson distribution define these distribution functions and are **not** statistics
+
+We presume that, under certain conditions, the statistics we use are good estimates of population level parameters; that is the basis of classical statistical inference
+
+Plot a standard curve
+
+```{r}
+library(mosaic)
+mu <- 10
+sigma <- 2
+plotDist("norm", mean = mu, sd = sigma, xlab = "x", ylab = "Frequency")
+```
+
+Draw a sample out of this distribution and look at statistics that define that sample
+
+```{r}
+s <- rnorm(n = 10, mean = 10, sd = 2)
+mean(s)
+sd(s)
+
+s <- rnorm(n = 1000, mean = 10, sd = 2)
+mean(s)
+sd(s)
+# larger sample --> closer to population mean of 10 and population sd of 2
+```
+
+
+## Sampling distribution of a statistic
+
+Each time we select a smaple and calculate summary statistics, such as the mean or sd, we get slightly different results. If we repeat this sampling prcoess multiple times, we cna use the results to generate a new distribution for those particular summary statistic of interest.
+
+This process generates what is called a **sampling distribution** for the statistic.
+
+*Sample distribution = set of possible statistcs that could have been generated if the data collection process is repeated many times, along with the probabilities of these possible values*
+
+
+Create a sampling distribution for the mean of sample drawn from normal distribution with mean of 10 and sd of 2
+
+```{r}
+reps <- 500
+samp_dist_mean <- # do loop
+  do(reps) * mean(rnorm(n = 10, mean = 10, sd = 2))
+str(samp_dist_mean)
+# generates a sampling distribution for the mean of our sample
+
+samp_dist_median <- 
+  do(reps) * median(rnorm(n = 10, mean = 10, sd = 2))
+# generates a sampling distribution for the median of our sample
+
+# could do the same thing with the maximum, minimum
+
+```
+
+Plots of sampling distributions
+
+```{r}
+histogram(~ mean, data = samp_dist_mean, xlab = "Samp Dist for the Mean")
+
+histogram(~ median, data = samp_dist_median, xlab = "Samp Dist for the Median")
+```
+
+The mean of a sampling distribution for a particular statistic should be a really good estimate of the population value for that statistic ( i.e., mu)
+
+The standard error is an estimate of how reliable or unreliable a statistic is for the population (how far off the statistic is likely to be from the true population statistic)
+
+Standard error (SE) = square root of the variance of the sampling distribution = standard deviation of the sampling distribution
+
+```{r}
+se_mean <- sd(samp_dist_mean$mean)
+
+se_median <- sd(samp_dist_median$median)
+```
+
+What happens to the spread of the sampling distribution and thus to the SE as size of samples increases?
+
+```{r}
+samp_dist_mean <- # do loop
+  do(reps) * mean(rnorm(n = 1000, mean = 10, sd = 2))
+
+histogram(~ mean, data = samp_dist_mean, xlab = "Samp Dist for the Mean")
+
+se_mean <- sd(samp_dist_mean$mean) # smaller se with greater sample size
+```
+
+## Programming your own simulation
+
+### Confidence Intervals
+
+The SE can be used to derive another measure of uncertainty in a statistic's value: the confidence interval, CI
+- Were we to draw another sample from the population, it would fall within the CI of the initial sample XX% of the time
+
+The CI is thus another way of describing a statistic's sampling distribution, and it plays a central role in basic inferential statistics.
+
+Conceptually, the confidence interval is an interval around our estimate or mean of the sampling distribution for a particular statistic (typically a mean), and it gives us a range of values into which subsequent estiamtes of a statistic would be expected to fall some critical proportion of the time, if the sampling exercise were to be repeated.
+
+Intuitively, higher confidence is associated with a wider interval. The "95% CI" around a statistic, for example, describes the range of values into which a new estimate of the statistic, derived from a subsequent sample, would fall 95% of the time
+
+CI = point estimate ± critical value * SE
+
+
+
+
